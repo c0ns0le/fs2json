@@ -4,7 +4,8 @@
   "description": "Translates a filesystem directory structure into a JSON object",
   "main": "index.js",
   "scripts": {
-    "test": "`npm bin`/mocha specs"
+    "test": "`npm bin`/coffee spec/runner.coffee",
+    "cover-test": "`npm/bin`/coffee --js spec/runner.coffee >spec/__compiled_runner.js && `npm/bin`/istanbul cover -x \"spec/**\" spec/__compiled_runner.js 2> /dev/null && rm -f spec/__compiled_runner.js"
   },
   "repository": "",
   "keywords": [
@@ -21,5 +22,13 @@
   "license": "MIT",
   "dependencies": {
     "findit": "~0.1.2"
+  },
+  "devDependencies": {
+    "chai": "~1.6.0",
+    "mocha": "~1.9.0",
+    "coffee-script-redux": "~2.0.0-beta5",
+    "sinon": "~1.7.2",
+    "sinon-chai": "~2.4.0",
+    "istanbul": "~0.1.35"
   }
 }
