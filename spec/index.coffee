@@ -38,33 +38,31 @@ describe 'public API', ->
     it 'should be available', ->
       instance.should.include.keys 'traverse'
       instance.traverse.should.be.a 'function'
-    it 'should require a path as its first parameter', ->
+    it 'should require a string as its first parameter', ->
       instance.traverse.bind(undefined, undefined).should.throw Error
-    it 'should return an object literal', ->
-      instance.traverse('path/to/false').should.be.a 'object'
+      instance.traverse.bind(undefined, 'index.js').should.not.throw Error
 
-  
     describe 'parameters', ->
 
       it 'should throw if the first param is not a string', ->
         instance.traverse.bind(undefined, undefined).should.throw Error
-        instance.traverse.bind(undefined, 'path/to/file').should.not.throw Error
+        instance.traverse.bind(undefined, 'index.js').should.not.throw Error
       it 'should execute the callback with an error if the first param is not a string', ->
         spy = sinon.spy()
-        instance.traverse('path/to/false', spy)
+        instance.traverse(undefined, spy)
         spy.should.have.been.called
-        #TODO Check parameters of spy
+        spy.lastCall.args[0].should.be.instanceof Error
       it 'should throw if the second param is defined and not a function', ->
-        instance.traverse.bind(undefined, 'path/to/file', -> ).should.not.throw Error
-        instance.traverse.bind(undefined, 'path/to/file').should.not.throw Error
+        instance.traverse.bind(undefined, 'index.js').should.not.throw Error
+        instance.traverse.bind(undefined, 'index.js', -> ).should.not.throw Error
         instance.traverse.bind(undefined, undefined, -> ).should.not.throw Error
         instance.traverse.bind(undefined, undefined).should.throw Error
         instance.traverse.bind(undefined, undefined, undefined).should.throw Error
 
-describe 'Non-directory root', ->
+  describe 'Non-directory root', ->
 
-   it 'should execute the callback with an error if the path does not exits', ->
-     spy = sinon.spy()
-     instance = fs2jsonModule().traverse('../specs/fixtures/null', spy)
-     spy.should.have.beenCalled
+     it 'should execute the callback with an error if the path does not exits', (done)->
+       instance = fs2jsonModule().traverse 'specs/fixtures/null', ->
+         arguments[0].should.be.instanceof Error
+         done()
 

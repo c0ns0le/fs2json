@@ -1,12 +1,13 @@
-var _ = require('underscore');
+var _ = require('underscore'),
+    findit = require('findit');
 
 function noop () {  }
 
-function _ErrorOrCallback (msg, cb) {
+function _ThrowOrCallback (err, cb) {
   if (cb && cb !== noop) {
-    cb(msg);
+    cb(err);
   } else {
-    throw new Error(msg);
+    throw err;
   }
 }
 
@@ -35,11 +36,26 @@ module.exports = function () {
       throw new TypeError('The callback must be a function.');
     }
     if (!_.isString(path)) {
-      _ErrorOrCallback('path must be a String', cb);
+      return _ThrowOrCallback(new Error('path must be a String'), cb);
     }
 
-    cb();
-    return {};
+    var finder = findit.find(path);
+    var _hasErrors = false;
+    finder.on('path', function (file, stat) {
+      if (file instanceof Error) {
+        _hasErrors = file;
+      }
+    });
+    finder.on('end', function () {
+      if (_hasErrors) {
+        return _ThrowOrCallback(_hasErrors, cb);
+      } else {
+        cb && cb(null, {});
+      }
+    });
+    finder.on('error', function (err) {
+      _hasErrors = err;
+    });
   }
 
   return obj;
