@@ -80,6 +80,12 @@ describe 'public API', ->
           data.type.should.equal 'file'
           done()
 
+      it 'should not have a children property', (done)->
+        instance = fs2jsonModule()
+        instance.traverse 'spec/fixtures/file_as_root', (err, data)->
+          data.should.not.include.keys ['children']
+          done()
+
     describe 'Using a directory as root', ->
 
       it 'should pass the stats of the dir to the callback', (done)->
