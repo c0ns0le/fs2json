@@ -59,10 +59,22 @@ describe 'public API', ->
         instance.traverse.bind(undefined, undefined).should.throw Error
         instance.traverse.bind(undefined, undefined, undefined).should.throw Error
 
-  describe 'Non-directory root', ->
+  describe 'Traversing a file as root', ->
 
-     it 'should execute the callback with an error if the path does not exits', (done)->
-       instance = fs2jsonModule().traverse 'specs/fixtures/null', ->
-         arguments[0].should.be.instanceof Error
-         done()
+    it 'should execute the callback with an error if it doees not exist', (done)->
+      fs2jsonModule().traverse 'spec/fixtures/null', ->
+        arguments[0].should.be.instanceof Error
+        done()
+
+    it 'should pass the stats of the file to the callback', (done)->
+      instance = fs2jsonModule()
+      instance.traverse 'spec/fixtures/file_as_root', (err, data)->
+        data.should.be.a 'object'
+        data.should.contain.keys ['name', 'relativePath', 'fullPath', 'size', 'type']
+        data.name.should.equal 'file_as_root'
+        data.relativePath.should.equal 'spec/fixtures/file_as_root'
+        data.fullPath.should.equal require('path').resolve('spec/fixtures/file_as_root')
+        data.size.should.equal 0
+        data.type.should.equal 'file'
+        done()
 
