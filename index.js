@@ -102,7 +102,7 @@ module.exports = function () {
       var _data = data;
       for (var i = 0; i < relativePathToSearchRoot.length; i++) {
         if (!_data.hasOwnProperty(relativePathToSearchRoot[i])) {
-          // @TODO The following sucks monkey nalls
+          // @TODO The following sucks monkey balls
           _data.children = _data.children || [];
           _data.children.push[relativePathToSearchRoot[i]] = {};
         }
