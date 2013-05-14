@@ -1,8 +1,22 @@
+/*
+ * @TODO Makes the callback mandatory or automatically turns synchronous if not present
+ *
+ */
+
+
 var _ = require('underscore'),
     findit = require('findit');
 
+/*
+ * Default function in case no callback is provided
+ *
+ */
 function noop () {  }
 
+/*
+ * Throws if no callback is available or cb is  noop
+ *
+ */
 function _ThrowOrCallback (err, cb) {
   if (cb && cb !== noop) {
     cb(err);
@@ -11,11 +25,42 @@ function _ThrowOrCallback (err, cb) {
   }
 }
 
+/*
+ * Adds properties to `this`, where `this` is an object literal
+ * representing an entry in the filesystem
+ *
+ */
+function _addProperties(file, stat) {
+
+  var type;
+  if (stat.isDirectory())     type = 'directory';
+  if (stat.isFile())          type = 'file';
+  if (stat.isSymbolicLink())  type = 'symlink';
+
+  var name = file.split('/').filter(function (e) {
+    return e.length;
+  }).pop();
+
+  var size = stat.size;
+
+  var fullPath = (require('path')).resolve(file);
+
+  this.name = name;
+  this.relativePath = file;
+  this.fullPath = fullPath;
+  this.size = size;
+  this.type = type;
+}
+
+
 module.exports = function () {
   "use strict";
 
   var _entryProps = ['name', 'relativePath', 'fullPath', 'size', 'type'];
 
+  /*
+   * The returned object
+   */
   var obj = {
     include: _include,
     describe: _describe,
@@ -44,19 +89,11 @@ module.exports = function () {
     var finder = findit.find(rootPath);
     var _hasErrors = false;
     var data = {};
+
     finder.on('path', function (file, stat) {
-      var type;
-      if (stat.isDirectory())     type = 'directory';
-      if (stat.isFile())          type = 'file';
-      if (stat.isSymbolicLink())  type = 'symlink';
       var splitPath = file.split('/').filter(function (e) {
         return e.length;
       });
-      var name = file.split('/').filter(function (e) {
-        return e.length;
-      }).pop();
-      var size = stat.size;
-      var fullPath = (require('path')).resolve(file);
       var relativePathToSearchRoot = file.replace(rootPath, '').replace('/', ''); //a '/' could confuse with the FS root
 
       var _data = data;
@@ -67,20 +104,17 @@ module.exports = function () {
         }
         _data = _data[relativePathToSearchRoot[i]];
       }
-      _data.name = name;
-      _data.relativePath = file;
-      _data.fullPath = fullPath;
-      _data.size = size;
-      _data.type = type;
+      _addProperties.call(_data, file, stat);
     });
+
     finder.on('end', function () {
       if (_hasErrors) {
         return _ThrowOrCallback(_hasErrors, cb);
       } else {
-        console.warn(data);
         cb && cb(null, data);
       }
     });
+
     finder.on('error', function (err) {
       _hasErrors = err;
     });
