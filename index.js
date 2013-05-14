@@ -55,6 +55,19 @@ function _addProperties(file, stat) {
   this.type = type;
 }
 
+function _findChild (data, name) {
+  if (!data.children) {
+    return null;
+  }
+  var filtered = data.children.map(function (elt) {
+    return elt.name = name;
+  });
+  if (filtered.length) {
+    return filetered[0];
+  }
+  return null;
+}
+
 
 module.exports = function () {
   "use strict";
@@ -101,12 +114,14 @@ module.exports = function () {
 
       var _data = data;
       for (var i = 0; i < relativePathToSearchRoot.length; i++) {
-        if (!_data.hasOwnProperty(relativePathToSearchRoot[i])) {
+        var _child = _findChild(_data, relativePathToSearchRoot[i]);
+        if (!_child) {
+          _child = {};
           // @TODO The following sucks monkey balls
           _data.children = _data.children || [];
-          _data.children.push[relativePathToSearchRoot[i]] = {};
+          _data.children.push(_child);
         }
-        _data = _data[relativePathToSearchRoot[i]];
+        _data = _child;
       }
       _addProperties.call(_data, file, stat);
     });

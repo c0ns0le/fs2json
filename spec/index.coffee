@@ -109,4 +109,13 @@ describe 'public API', ->
             data.children.length.should.equal 0
             done()
 
+      describe 'The directory contains elements', ->
+        it 'should have a children property containing an array', (done)->
+          instance = fs2jsonModule()
+          instance.traverse 'spec/fixtures/single_file', (err, data)->
+            data.children.should.be.a 'array'
+            data.children.length.should.equal 1
+            done()
+
+
 
