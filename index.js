@@ -33,9 +33,12 @@ function _ThrowOrCallback (err, cb) {
 function _addProperties(file, stat) {
 
   var type;
-  if (stat.isDirectory())     type = 'directory';
   if (stat.isFile())          type = 'file';
   if (stat.isSymbolicLink())  type = 'symlink';
+  if (stat.isDirectory()) {
+    type = 'directory';
+    this.children = [];
+  }
 
   var name = file.split('/').filter(function (e) {
     return e.length;
@@ -100,7 +103,8 @@ module.exports = function () {
       for (var i = 0; i < relativePathToSearchRoot.length; i++) {
         if (!_data.hasOwnProperty(relativePathToSearchRoot[i])) {
           // @TODO The following sucks monkey nalls
-          _data[relativePathToSearchRoot[i]] = {};
+          _data.children = _data.children || [];
+          _data.children.push[relativePathToSearchRoot[i]] = {};
         }
         _data = _data[relativePathToSearchRoot[i]];
       }
