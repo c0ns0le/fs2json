@@ -60,10 +60,10 @@ function _findChild (data, name) {
     return null;
   }
   var filtered = data.children.map(function (elt) {
-    return elt.name = name;
+    return elt.name === name;
   });
   if (filtered.length) {
-    return filetered[0];
+    return filtered[0];
   }
   return null;
 }
@@ -110,7 +110,12 @@ module.exports = function () {
       var splitPath = file.split('/').filter(function (e) {
         return e.length;
       });
-      var relativePathToSearchRoot = file.replace(rootPath, '').replace('/', ''); //a '/' could confuse with the FS root
+      var relativePathToSearchRoot = file.replace(rootPath, '').replace('/', '');
+      if (relativePathToSearchRoot.length) {
+        relativePathToSearchRoot = relativePathToSearchRoot.split('/'); //a '/' could confuse with the FS root
+      } else {
+        relativePathToSearchRoot = [];
+      }
 
       var _data = data;
       for (var i = 0; i < relativePathToSearchRoot.length; i++) {

@@ -1,5 +1,6 @@
 sinon = require 'sinon'
 chai = require 'chai'
+q = require 'q'
 chai.use require('sinon-chai')
 chai.should()
 
@@ -59,62 +60,85 @@ describe 'public API', ->
         instance.traverse.bind(undefined, undefined).should.throw Error
         instance.traverse.bind(undefined, undefined, undefined).should.throw Error
 
-  describe "Traversing the file system", ->
+describe "Traversing the file system", ->
 
-    it 'should execute the callback with an error if it does not exist', (done)->
-      fs2jsonModule().traverse 'spec/fixtures/null', ->
-        arguments[0].should.be.instanceof Error
+  it 'should execute the callback with an error if the path does not exist', (done)->
+    fs2jsonModule().traverse 'spec/fixtures/null', ->
+      arguments[0].should.be.instanceof Error
+      done()
+
+  describe 'Using a file as root', ->
+
+    it 'should pass the stats of the file to the callback', (done)->
+      instance = fs2jsonModule()
+      instance.traverse 'spec/fixtures/file_as_root', (err, data)->
+        data.should.be.a 'object'
+        data.should.contain.keys ['name', 'relativePath', 'fullPath', 'size', 'type']
+        data.name.should.equal 'file_as_root'
+        data.relativePath.should.equal 'spec/fixtures/file_as_root'
+        data.fullPath.should.equal require('path').resolve('spec/fixtures/file_as_root')
+        data.size.should.equal 0
+        data.type.should.equal 'file'
         done()
 
-    describe 'Using a file as root', ->
+    it 'should not have a children property', (done)->
+      instance = fs2jsonModule()
+      instance.traverse 'spec/fixtures/file_as_root', (err, data)->
+        data.should.not.include.keys ['children']
+        done()
 
-      it 'should pass the stats of the file to the callback', (done)->
-        instance = fs2jsonModule()
-        instance.traverse 'spec/fixtures/file_as_root', (err, data)->
-          data.should.be.a 'object'
-          data.should.contain.keys ['name', 'relativePath', 'fullPath', 'size', 'type']
-          data.name.should.equal 'file_as_root'
-          data.relativePath.should.equal 'spec/fixtures/file_as_root'
-          data.fullPath.should.equal require('path').resolve('spec/fixtures/file_as_root')
-          data.size.should.equal 0
-          data.type.should.equal 'file'
-          done()
+  describe 'Using a directory as root', ->
 
-      it 'should not have a children property', (done)->
-        instance = fs2jsonModule()
-        instance.traverse 'spec/fixtures/file_as_root', (err, data)->
-          data.should.not.include.keys ['children']
-          done()
+    it 'should pass the stats of the dir to the callback', (done)->
+      instance = fs2jsonModule()
+      instance.traverse 'spec/fixtures/empty', (err, data)->
+        data.should.be.a 'object'
+        data.should.contain.keys ['name', 'relativePath', 'fullPath', 'size', 'type']
+        data.name.should.equal 'empty'
+        data.relativePath.should.equal 'spec/fixtures/empty'
+        data.fullPath.should.equal require('path').resolve('spec/fixtures/empty')
+        data.size.should.equal 68
+        data.type.should.equal 'directory'
+        done()
 
-    describe 'Using a directory as root', ->
+    describe 'The directory is empty', ->
 
-      it 'should pass the stats of the dir to the callback', (done)->
+      it 'should have an empty array as its children property', (done)->
         instance = fs2jsonModule()
         instance.traverse 'spec/fixtures/empty', (err, data)->
-          data.should.be.a 'object'
-          data.should.contain.keys ['name', 'relativePath', 'fullPath', 'size', 'type']
-          data.name.should.equal 'empty'
-          data.relativePath.should.equal 'spec/fixtures/empty'
-          data.fullPath.should.equal require('path').resolve('spec/fixtures/empty')
-          data.size.should.equal 68
-          data.type.should.equal 'directory'
+          data.children.should.be.a 'array'
+          data.children.length.should.equal 0
           done()
 
-      describe 'The directory is empty', ->
-
-        it 'should have an empty array as its children property', (done)->
-          instance = fs2jsonModule()
-          instance.traverse 'spec/fixtures/empty', (err, data)->
-            data.children.should.be.a 'array'
-            data.children.length.should.equal 0
-            done()
-
-      describe 'The directory contains elements', ->
-        it 'should have a children property containing an array', (done)->
+    describe 'The directory contains elements', ->
+      it 'should have a children property containing an array', (done)->
+        instance = fs2jsonModule()
+        instance.traverse 'spec/fixtures/single_file', (err, data)->
+          data.children.should.be.a 'array'
+          done()
+      describe 'the children array', ->
+        it 'should have the correct length', (done)->
+          dfd1 = q.defer()
+          dfd2 = q.defer()
+          q.all([dfd1.promise,dfd2.promise]).spread -> done()
           instance = fs2jsonModule()
           instance.traverse 'spec/fixtures/single_file', (err, data)->
-            data.children.should.be.a 'array'
             data.children.length.should.equal 1
+            dfd1.resolve()
+          instance = fs2jsonModule()
+          instance.traverse 'spec/fixtures/multiple_files', (err, data)->
+            data.children.length.should.equal 2
+            dfd2.resolve()
+        it 'should describe the children elements', (done)->
+          dfdParent = q.defer()
+          dfdChild = q.defer()
+          instance = fs2jsonModule()
+          instance.traverse 'spec/fixtures/single_file', (err, data)->
+            dfdParent.resolve data.children[0]
+          instance.traverse 'spec/fixtures/single_file/file1', (err, data)->
+            dfdChild.resolve data
+          q.all([dfdParent.promise, dfdChild.promise]).spread (childFromParent, child)->
+            childFromParent.should.eql child
             done()
 
 
