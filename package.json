@@ -21,7 +21,7 @@
   "author": "Xavier Cambar <xcambar@gmail.com>",
   "license": "MIT",
   "dependencies": {
-    "findit": "~0.1.2",
+    "findit": "git://github.com/xcambar/node-findit.git",
     "underscore": "~1.4.4"
   },
   "devDependencies": {
