@@ -1,5 +1,7 @@
 # FS2JSON
 
+[ ![Codeship Status for xcambar/fs2json](https://www.codeship.io/projects/7cf2d920-a635-0130-eac8-26eb5209726f/status?branch=master) ](https://www.codeship.io/projects/3730)
+
 > This is an early version, currently in development, therefore not featureful yet, you'd better not use it right now
 > Unless you want to participate or make comments :wink:
 
