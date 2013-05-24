@@ -8,4 +8,4 @@ mocha = new (require 'mocha')();
 mocha.reporter 'spec'
 mocha.files = specFiles.map (f)->
   return [__dirname, f].join '/'
-mocha.run()
+mocha.run process.exit
