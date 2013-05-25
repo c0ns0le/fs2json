@@ -59,7 +59,7 @@ function _findChild (data, name) {
   if (!data.children) {
     return null;
   }
-  var filtered = data.children.map(function (elt) {
+  var filtered = data.children.filter(function (elt) {
     return elt.name === name;
   });
   if (filtered.length) {
