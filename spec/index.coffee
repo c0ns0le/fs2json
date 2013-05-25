@@ -75,7 +75,7 @@ describe "Traversing the file system", ->
         data.should.be.a 'object'
         data.should.contain.keys ['name', 'relativePath', 'fullPath', 'size', 'type']
         data.name.should.equal 'file_as_root'
-        data.relativePath.should.equal 'spec/fixtures/file_as_root'
+        data.relativePath.should.equal ''
         data.fullPath.should.equal require('path').resolve('spec/fixtures/file_as_root')
         data.size.should.equal 0
         data.type.should.equal 'file'
@@ -95,7 +95,7 @@ describe "Traversing the file system", ->
         data.should.be.a 'object'
         data.should.contain.keys ['name', 'relativePath', 'fullPath', 'size', 'type']
         data.name.should.equal 'empty'
-        data.relativePath.should.equal 'spec/fixtures/empty'
+        data.relativePath.should.equal ''
         data.fullPath.should.equal require('path').resolve('spec/fixtures/empty')
         data.size.should.equal 68
         data.type.should.equal 'directory'
@@ -138,6 +138,10 @@ describe "Traversing the file system", ->
           instance.traverse 'spec/fixtures/single_file/file1', (err, data)->
             dfdChild.resolve data
           q.all([dfdParent.promise, dfdChild.promise]).spread (childFromParent, child)->
+            childFromParent.relativePath.should.eql 'file1'
+            child.relativePath.should.eql ''
+            delete childFromParent.relativePath
+            delete child.relativePath
             childFromParent.should.eql child
             done()
 

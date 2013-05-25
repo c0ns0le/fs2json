@@ -30,7 +30,7 @@ function _ThrowOrCallback (err, cb) {
  * representing an entry in the filesystem
  *
  */
-function _addProperties(file, stat) {
+function _addProperties(file, relativePath, stat) {
 
   var type;
   if (stat.isFile())          type = 'file';
@@ -49,7 +49,7 @@ function _addProperties(file, stat) {
   var fullPath = (require('path')).resolve(file);
 
   this.name = name;
-  this.relativePath = file;
+  this.relativePath = relativePath;
   this.fullPath = fullPath;
   this.size = size;
   this.type = type;
@@ -107,7 +107,7 @@ module.exports = function () {
     var data = {};
 
     finder.on('path', function (file, stat) {
-      var splitPath = file.split('/').filter(function (e) {
+      var splitPath = file.replace(rootPath, '').split('/').filter(function (e) {
         return e.length;
       });
       var relativePathToSearchRoot = file.replace(rootPath, '').replace('/', '');
@@ -128,7 +128,7 @@ module.exports = function () {
         }
         _data = _child;
       }
-      _addProperties.call(_data, file, stat);
+      _addProperties.call(_data, file, relativePathToSearchRoot.join('/'), stat);
     });
 
     finder.on('end', function () {
