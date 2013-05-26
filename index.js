@@ -108,7 +108,7 @@ module.exports = function () {
       return _ThrowOrCallback(new Error('no path given'), cb);
     }
 
-    var finder = findit.find(rootPath);
+    var finder = findit.find(rootPath, opts);
     var _hasErrors = false;
     var data = {};
 

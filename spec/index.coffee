@@ -12,6 +12,10 @@ describe 'the module', ->
   it 'should return an object', ->
     fs2jsonModule().should.be.an 'object'
 
+# 
+# @TODO Test the depth
+#
+
 describe 'public API', ->
 
   instance = null
@@ -153,6 +157,55 @@ describe "Traversing the file system", ->
             delete child.relativePath
             childFromParent.should.eql child
             done()
+
+describe 'specify the depth (recursively proven)', ->
+  describe 'depth 0', ->
+    it 'should be the root of the search when a directory', (done)->
+      instance = fs2jsonModule()
+      instance.traverse {path: 'spec/fixtures', depth: 0}, (err, data)->
+        data.children.length.should.equal 0
+        done()
+    it 'should be the root of the search when a file', (done)->
+      instance = fs2jsonModule()
+      instDfd = q.defer()
+      instanceCheck = fs2jsonModule()
+      instChkDfd = q.defer()
+
+      instance.traverse {path: 'index.js', depth: 0}, (err, data)->
+        instDfd.resolve(data)
+      instanceCheck.traverse 'index.js', (err, data)->
+        instChkDfd.resolve(data)
+
+      q.all([instDfd.promise, instChkDfd.promise]).spread (inst, chk)->
+        inst.should.eql chk
+        done()
+
+
+  describe 'depth 1', ->
+    it 'should be empty with a file as root', (done)->
+      instance = fs2jsonModule()
+      instance.traverse {path: 'index.js', depth: 1}, (err, data)->
+        data.should.eql {}
+        done()
+    it 'should be the direct children with a directory as root', (done)->
+      instance = fs2jsonModule()
+      instance.traverse {path: 'spec/fixtures/multiple_files', depth: 1}, (err, data)->
+        data.children.length.should.equal 2
+        done()
+
+
+  describe 'depth n',->
+    it 'should be empty of children of lesser depth', (done)->
+      instance = fs2jsonModule()
+      instance.traverse {path: 'spec/fixtures/multiple_files', depth: 2}, (err, data)->
+        data.should.not.contain.keys['children']
+        done()
+    xit 'should be empty of children of lesser depth', (done)->
+      instance = fs2jsonModule()
+      instance.traverse {path: 'spec', depth: 2}, (err, data)->
+        done()
+
+
 
 
 
