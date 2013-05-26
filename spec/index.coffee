@@ -12,10 +12,6 @@ describe 'the module', ->
   it 'should return an object', ->
     fs2jsonModule().should.be.an 'object'
 
-# 
-# @TODO Test the depth
-#
-
 describe 'public API', ->
 
   instance = null
@@ -187,10 +183,15 @@ describe 'specify the depth (recursively proven)', ->
       instance.traverse {path: 'index.js', depth: 1}, (err, data)->
         data.should.eql {}
         done()
-    it 'should be the direct children with a directory as root', (done)->
+    it 'should be the direct children with a directory as root and children are terminal in the filesystem', (done)->
       instance = fs2jsonModule()
       instance.traverse {path: 'spec/fixtures/multiple_files', depth: 1}, (err, data)->
         data.children.length.should.equal 2
+        done()
+    it 'should be the direct children with a directory as root even when there are nodes deeper', (done)->
+      instance = fs2jsonModule()
+      instance.traverse {path: 'spec/fixtures', depth: 1}, (err, data)->
+        data.children.length.should.equal 6
         done()
 
 
