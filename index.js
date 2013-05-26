@@ -91,15 +91,21 @@ module.exports = function () {
     return obj;
   }
 
-  function _traverse (rootPath, cb) {
-    if (!cb) {
-      cb = noop;
+  function _traverse (rootPath, opts, cb) {
+    if (_.isFunction(opts)) {
+      cb = opts;
+      opts = {};
     }
     if (cb && !_.isFunction(cb)) {
-      throw new TypeError('The callback must be a function.');
+      return _ThrowOrCallback(new TypeError('The callback must be a function.'));
     }
+    if (_.isObject(rootPath)) {
+      opts = rootPath;
+      rootPath = opts.path;
+    }
+
     if (!_.isString(rootPath)) {
-      return _ThrowOrCallback(new Error('path must be a String'), cb);
+      return _ThrowOrCallback(new Error('no path given'), cb);
     }
 
     var finder = findit.find(rootPath);

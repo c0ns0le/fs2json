@@ -39,20 +39,29 @@ describe 'public API', ->
     it 'should be available', ->
       instance.should.include.keys 'traverse'
       instance.traverse.should.be.a 'function'
-    it 'should require a string as its first parameter', ->
-      instance.traverse.bind(undefined, undefined).should.throw Error
-      instance.traverse.bind(undefined, 'index.js').should.not.throw Error
 
     describe 'parameters', ->
 
-      it 'should throw if the first param is not a string', ->
-        instance.traverse.bind(undefined, undefined).should.throw Error
-        instance.traverse.bind(undefined, 'index.js').should.not.throw Error
-      it 'should execute the callback with an error if the first param is not a string', ->
-        spy = sinon.spy()
-        instance.traverse(undefined, spy)
-        spy.should.have.been.called
-        spy.lastCall.args[0].should.be.instanceof Error
+      describe 'first is a string', ->
+        it 'should accept a string as a first parameter', ->
+          instance.traverse.bind(undefined, 'index.js').should.not.throw Error
+        it 'should accept an object as second parameter', ->
+          instance.traverse.bind(undefined, 'index.js', {}).should.not.throw Error
+        it 'should accept a function as second parameter', (done)->
+          instance.traverse.bind(undefined, 'index.js', -> done()).should.not.throw Error
+        it 'should accept an object as second and a function as third parameter', (done)->
+          instance.traverse.bind(undefined, 'index.js', {}, -> done()).should.not.throw Error
+      describe 'first is an object', ->
+        it 'should accept an object with a path property as a first parameter', ->
+          instance.traverse.bind(undefined, {}).should.throw Error
+          instance.traverse.bind(undefined, {path: 'index.js'}).should.not.throw Error
+        it 'should accept a function as the second', (done)->
+          instance.traverse.bind(undefined, {path: 'index.js'}, -> done()).should.not.throw Error
+
+      it 'should execute the callback with an error if the first param is not a string', (done)->
+        instance.traverse undefined, (arg)-> 
+          done()
+          arg.should.be.instanceof Error
       it 'should throw if the second param is defined and not a function', ->
         instance.traverse.bind(undefined, 'index.js').should.not.throw Error
         instance.traverse.bind(undefined, 'index.js', -> ).should.not.throw Error
