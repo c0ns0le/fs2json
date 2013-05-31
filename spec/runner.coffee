@@ -1,4 +1,4 @@
-specFiles = ['index.coffee']
+specFiles = ['index.coffee', 'traverse.coffee']
 
 
 
