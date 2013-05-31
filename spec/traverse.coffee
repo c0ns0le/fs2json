@@ -26,6 +26,13 @@ describe 'Traversing with a file as root', ->
     em = traverse path
     em.on 'path', ->
       done()
+  it 'should send the path and Stat instance with the `path` event', (done)->
+    path = helpers.fake_fs 'file_as_root'
+    em = traverse path
+    em.on 'path', (_path, stat)->
+      _path.should.equal path
+      # @TODO How to check the Stat file ?
+      done()
   it 'should emit a `end` event', (done)->
     path = helpers.fake_fs 'file_as_root'
     em = traverse path
@@ -59,3 +66,24 @@ describe 'Traversing an empty dir', ->
     em.on 'end', ->
       spy.should.have.been.called
       done()
+describe 'Traversing a dir containing files', ->
+  it 'should emit as many `path` events as the number of children', (done)->
+    spy = sinon.spy()
+    path = helpers.fake_fs 'dir_two_files'
+    em = traverse path
+    em.on 'path', spy
+    em.on 'end', ->
+      spy.should.have.been.called.twice
+      done()
+
+describe 'Traversing a directory with subdirectories and files', ->
+  it 'should emit as many `path` events as the number of children', (done)->
+    spy = sinon.spy()
+    path = helpers.fake_fs 'depth_2'
+    em = traverse path
+    em.on 'path', spy
+    em.on 'end', ->
+      spy.should.have.been.called
+      spy.callCount.should.equal 7
+      done()
+
