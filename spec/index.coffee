@@ -4,7 +4,12 @@ q = require 'q'
 chai.use require('sinon-chai')
 chai.should()
 
+helpers = require './helpers'
+
 fs2jsonModule = require '../index'
+
+after ->
+  helpers.fake_fs.clean()
 
 describe 'the module', ->
   it 'should be a function', ->
@@ -80,19 +85,21 @@ describe "Traversing the file system", ->
 
     it 'should pass the stats of the file to the callback', (done)->
       instance = fs2jsonModule()
-      instance.traverse 'spec/fixtures/file_as_root', (err, data)->
+      path = helpers.fake_fs 'file_as_root'
+      instance.traverse path, (err, data)->
         data.should.be.a 'object'
         data.should.contain.keys ['name', 'relativePath', 'fullPath', 'size', 'type']
         data.name.should.equal 'file_as_root'
         data.relativePath.should.equal ''
-        data.fullPath.should.equal require('path').resolve('spec/fixtures/file_as_root')
+        data.fullPath.should.equal require('path').resolve path
         data.size.should.equal 0
         data.type.should.equal 'file'
         done()
 
     it 'should not have a children property', (done)->
       instance = fs2jsonModule()
-      instance.traverse 'spec/fixtures/file_as_root', (err, data)->
+      path = helpers.fake_fs 'file_as_root'
+      instance.traverse path, (err, data)->
         data.should.not.include.keys ['children']
         done()
 
@@ -100,12 +107,13 @@ describe "Traversing the file system", ->
 
     it 'should pass the stats of the dir to the callback', (done)->
       instance = fs2jsonModule()
-      instance.traverse 'spec/fixtures/empty', (err, data)->
+      path = helpers.fake_fs 'empty_dir'
+      instance.traverse path, (err, data)->
         data.should.be.a 'object'
         data.should.contain.keys ['name', 'relativePath', 'fullPath', 'size', 'type']
         data.name.should.equal 'empty'
         data.relativePath.should.equal ''
-        data.fullPath.should.equal require('path').resolve('spec/fixtures/empty')
+        data.fullPath.should.equal require('path').resolve path
         data.size.should.equal 68
         data.type.should.equal 'directory'
         done()
@@ -114,7 +122,8 @@ describe "Traversing the file system", ->
 
       it 'should have an empty array as its children property', (done)->
         instance = fs2jsonModule()
-        instance.traverse 'spec/fixtures/empty', (err, data)->
+        path = helpers.fake_fs 'empty_dir'
+        instance.traverse path, (err, data)->
           data.children.should.be.a 'array'
           data.children.length.should.equal 0
           done()
@@ -122,7 +131,8 @@ describe "Traversing the file system", ->
     describe 'The directory contains elements', ->
       it 'should have a children property containing an array', (done)->
         instance = fs2jsonModule()
-        instance.traverse 'spec/fixtures/single_file', (err, data)->
+        path = helpers.fake_fs 'dir_one_file'
+        instance.traverse path, (err, data)->
           data.children.should.be.a 'array'
           done()
       describe 'the children array', ->
@@ -131,23 +141,26 @@ describe "Traversing the file system", ->
           dfd2 = q.defer()
           q.all([dfd1.promise,dfd2.promise]).spread -> done()
           instance = fs2jsonModule()
-          instance.traverse 'spec/fixtures/single_file', (err, data)->
+          path = helpers.fake_fs 'dir_one_file'
+          instance.traverse path, (err, data)->
             data.children.length.should.equal 1
             dfd1.resolve()
           instance = fs2jsonModule()
-          instance.traverse 'spec/fixtures/multiple_files', (err, data)->
+          path = helpers.fake_fs 'dir_two_files'
+          instance.traverse path, (err, data)->
             data.children.length.should.equal 2
             dfd2.resolve()
         it 'should describe the children elements', (done)->
           dfdParent = q.defer()
           dfdChild = q.defer()
           instance = fs2jsonModule()
-          instance.traverse 'spec/fixtures/single_file', (err, data)->
+          path = helpers.fake_fs 'dir_one_file'
+          instance.traverse path, (err, data)->
             dfdParent.resolve data.children[0]
-          instance.traverse 'spec/fixtures/single_file/file1', (err, data)->
+          instance.traverse ([path, 'file'].join '/'), (err, data)->
             dfdChild.resolve data
           q.all([dfdParent.promise, dfdChild.promise]).spread (childFromParent, child)->
-            childFromParent.relativePath.should.eql 'file1'
+            childFromParent.relativePath.should.eql 'file'
             child.relativePath.should.eql ''
             delete childFromParent.relativePath
             delete child.relativePath
@@ -158,7 +171,8 @@ describe 'specify the depth (recursively proven)', ->
   describe 'depth 0', ->
     it 'should be the root of the search when a directory', (done)->
       instance = fs2jsonModule()
-      instance.traverse {path: 'spec/fixtures', depth: 0}, (err, data)->
+      path = helpers.fake_fs 'dir_two_files'
+      instance.traverse {path: path, depth: 0}, (err, data)->
         data.children.length.should.equal 0
         done()
     it 'should be the root of the search when a file', (done)->
@@ -167,9 +181,11 @@ describe 'specify the depth (recursively proven)', ->
       instanceCheck = fs2jsonModule()
       instChkDfd = q.defer()
 
-      instance.traverse {path: 'index.js', depth: 0}, (err, data)->
+      path = helpers.fake_fs 'file_as_root'
+
+      instance.traverse {path: path, depth: 0}, (err, data)->
         instDfd.resolve(data)
-      instanceCheck.traverse 'index.js', (err, data)->
+      instanceCheck.traverse path, (err, data)->
         instChkDfd.resolve(data)
 
       q.all([instDfd.promise, instChkDfd.promise]).spread (inst, chk)->
@@ -180,25 +196,29 @@ describe 'specify the depth (recursively proven)', ->
   describe 'depth 1', ->
     it 'should be empty with a file as root', (done)->
       instance = fs2jsonModule()
-      instance.traverse {path: 'index.js', depth: 1}, (err, data)->
+      path = helpers.fake_fs 'file_as_root'
+      instance.traverse {path: path, depth: 1}, (err, data)->
         data.should.eql {}
         done()
     it 'should be the direct children with a directory as root and children are terminal in the filesystem', (done)->
       instance = fs2jsonModule()
-      instance.traverse {path: 'spec/fixtures/multiple_files', depth: 1}, (err, data)->
+      path = helpers.fake_fs 'dir_two_files'
+      instance.traverse {path: path, depth: 1}, (err, data)->
         data.children.length.should.equal 2
         done()
     it 'should be the direct children with a directory as root even when there are nodes deeper', (done)->
       instance = fs2jsonModule()
-      instance.traverse {path: 'spec/fixtures', depth: 1}, (err, data)->
-        data.children.length.should.equal 6
+      path = helpers.fake_fs 'depth_2'
+      instance.traverse {path: path, depth: 1}, (err, data)->
+        data.children.length.should.equal 4
         done()
 
 
   describe 'depth n',->
     it 'should be empty of children of lesser depth', (done)->
       instance = fs2jsonModule()
-      instance.traverse {path: 'spec/fixtures/multiple_files', depth: 2}, (err, data)->
+      path = helpers.fake_fs 'depth_2'
+      instance.traverse {path: path, depth: 2}, (err, data)->
         data.should.not.contain.keys['children']
         done()
     xit 'should be empty of children of lesser depth', (done)->

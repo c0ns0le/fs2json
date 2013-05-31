@@ -1,0 +1,24 @@
+{
+  "file_as_root": {
+    "file_as_root": false
+  },
+  "empty_dir": {
+    "empty": true
+  },
+  "dir_one_file": {
+    "dir/file": false,
+    "dir": true
+  },
+  "dir_two_files": {
+    "dir/file1": false,
+    "dir/file2": false,
+    "dir": true
+  },
+  "depth_2": {
+    "dir/file1": false,
+    "dir/00": true,
+    "dir/01/00": true,
+    "dir/02/00": true,
+    "dir": true
+  }
+}
