@@ -5,7 +5,7 @@
 
 
 var _ = require('underscore'),
-    findit = require('findit');
+    findit = require('./lib/traverse');
 
 /*
  * Default function in case no callback is provided
