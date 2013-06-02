@@ -1,8 +1,12 @@
 traverse = require '../lib/traverse'
 sinon = require 'sinon'
+chai = require 'chai'
 helpers = require './helpers'
 fixtures = require './fixtures/fs.json'
 q = require 'q'
+
+chai.use require('sinon-chai')
+chai.should()
 
 describe 'Traversing a non-existing path', ->
   it 'should emit an `error` event', (done)->
