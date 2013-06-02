@@ -114,7 +114,6 @@ describe "Traversing the file system", ->
         data.name.should.equal 'empty'
         data.relativePath.should.equal ''
         data.fullPath.should.equal require('path').resolve path
-        data.size.should.equal 68
         data.type.should.equal 'directory'
         done()
 
