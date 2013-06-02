@@ -5,7 +5,7 @@
 
 
 var _ = require('underscore'),
-    findit = require('findit');
+    findit = require('./lib/traverse');
 
 /*
  * Default function in case no callback is provided
@@ -108,8 +108,7 @@ module.exports = function () {
       return _ThrowOrCallback(new Error('no path given'), cb);
     }
 
-    var finder = findit.find(rootPath, opts);
-    var _hasErrors = false;
+    var finder = findit(rootPath, opts);
     var data = {};
 
     finder.on('path', function (file, stat) {
@@ -138,15 +137,11 @@ module.exports = function () {
     });
 
     finder.on('end', function () {
-      if (_hasErrors) {
-        return _ThrowOrCallback(_hasErrors, cb);
-      } else {
-        cb && cb(null, data);
-      }
+      cb && cb(null, data);
     });
 
     finder.on('error', function (err) {
-      _hasErrors = err;
+      return _ThrowOrCallback(err, cb);
     });
   }
 
