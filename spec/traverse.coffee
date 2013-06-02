@@ -14,9 +14,17 @@ describe 'Traversing a non-existing path', ->
     em.on 'error', ->
       done()
 
+  it 'should not emit an `path` event', (done)->
+    dfd = q.defer()
+    em = traverse 'qwertyuiopasdfghjklzxcvbnm' #That one either...
+    em.on 'error', ->
+      done()
+    em.on 'path', ->
+      done('should not have been called')
+
   # @TODO How to check that the event has NOT been raised, when the only other event is raised prior to it?
   #       Use timeouts ? Seems ugly...
-  xit 'should not emit an `end` event', ()->
+  xit 'should not emit an `end` event', (done)->
     dfd = q.defer()
     em = traverse 'qwertyuiopasdfghjklzxcvbnm' #That one either...
     em.on 'error', ->
