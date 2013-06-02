@@ -5,7 +5,7 @@
 
 
 var _ = require('underscore'),
-    findit = require('./lib/traverse');
+    treeverse = require('./lib/traverse').Treeverse;
 
 /*
  * Default function in case no callback is provided
