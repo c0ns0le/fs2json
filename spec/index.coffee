@@ -167,7 +167,7 @@ describe "Traversing the file system", ->
             childFromParent.should.eql child
             done()
 
-xdescribe 'specify the depth (recursively proven)', ->
+describe 'specify the depth (recursively proven)', ->
   describe 'depth 0', ->
     it 'should be the root of the search when a directory', (done)->
       instance = fs2jsonModule()
