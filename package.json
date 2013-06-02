@@ -22,7 +22,8 @@
   "license": "MIT",
   "dependencies": {
     "findit": "git://github.com/xcambar/node-findit.git",
-    "underscore": "~1.4.4"
+    "underscore": "~1.4.4",
+    "async": "~0.2.9"
   },
   "devDependencies": {
     "chai": "~1.6.0",
