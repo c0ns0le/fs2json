@@ -108,7 +108,20 @@ module.exports = function () {
       return _ThrowOrCallback(new Error('no path given'), cb);
     }
 
-    var finder = findit(rootPath, opts);
+    if (!opts) {
+      opts = {};
+    }
+
+    var finder = new treeverse();
+    var depthFilter = require('./lib/filters/depth')({
+      depth: opts.depth,
+      minDepth: opts.minDepth,
+      maxDepth: opts.maxDepth,
+      baseDir: rootPath
+    });
+    finder
+      .filter(depthFilter)
+      .run(rootPath, opts);
     var data = {};
 
     finder.on('path', function (file, stat) {
