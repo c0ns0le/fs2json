@@ -1,4 +1,7 @@
-specFiles = ['index.coffee', 'traverse.coffee']
+specFiles = [
+  'index.coffee',
+  'lib/traverse.coffee',
+]
 
 
 
