@@ -1,8 +1,8 @@
-traverse = require '../lib/traverse'
+traverse = require '../../lib/traverse'
 sinon = require 'sinon'
 chai = require 'chai'
-helpers = require './helpers'
-fixtures = require './fixtures/fs.json'
+helpers = require '../helpers'
+fixtures = require '../fixtures/fs.json'
 q = require 'q'
 
 chai.use require('sinon-chai')
