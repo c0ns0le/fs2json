@@ -7,7 +7,8 @@ specFiles = [
 
 
 
-require 'coffee-script-redux'
+cs = require 'coffee-script-redux'
+cs.register()
 mocha = new (require 'mocha')();
 mocha.reporter 'spec'
 mocha.files = specFiles.map (f)->
