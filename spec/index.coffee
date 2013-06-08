@@ -166,64 +166,6 @@ describe "Traversing the file system", ->
             childFromParent.should.eql child
             done()
 
-describe 'specify the depth (recursively proven)', ->
-  describe 'depth 0', ->
-    it 'should be the root of the search when a directory', (done)->
-      instance = fs2jsonModule()
-      path = helpers.fake_fs 'dir_two_files'
-      instance.traverse {path: path, depth: 0}, (err, data)->
-        data.children.length.should.equal 0
-        done()
-    it 'should be the root of the search when a file', (done)->
-      instance = fs2jsonModule()
-      instDfd = q.defer()
-      instanceCheck = fs2jsonModule()
-      instChkDfd = q.defer()
-
-      path = helpers.fake_fs 'file_as_root'
-
-      instance.traverse {path: path, depth: 0}, (err, data)->
-        instDfd.resolve(data)
-      instanceCheck.traverse path, (err, data)->
-        instChkDfd.resolve(data)
-
-      q.all([instDfd.promise, instChkDfd.promise]).spread (inst, chk)->
-        inst.should.eql chk
-        done()
-
-
-  describe 'depth 1', ->
-    it 'should be empty with a file as root', (done)->
-      instance = fs2jsonModule()
-      path = helpers.fake_fs 'file_as_root'
-      instance.traverse {path: path, depth: 1}, (err, data)->
-        data.should.eql {}
-        done()
-    it 'should be the direct children with a directory as root and children are terminal in the filesystem', (done)->
-      instance = fs2jsonModule()
-      path = helpers.fake_fs 'dir_two_files'
-      instance.traverse {path: path, depth: 1}, (err, data)->
-        data.children.length.should.equal 2
-        done()
-    it 'should be the direct children with a directory as root even when there are nodes deeper', (done)->
-      instance = fs2jsonModule()
-      path = helpers.fake_fs 'depth_2'
-      instance.traverse {path: path, depth: 1}, (err, data)->
-        data.children.length.should.equal 4
-        done()
-
-
-  describe 'depth n',->
-    it 'should be empty of children of lesser depth', (done)->
-      instance = fs2jsonModule()
-      path = helpers.fake_fs 'depth_2'
-      instance.traverse {path: path, depth: 2}, (err, data)->
-        data.should.not.contain.keys['children']
-        done()
-    xit 'should be empty of children of lesser depth', (done)->
-      instance = fs2jsonModule()
-      instance.traverse {path: 'spec', depth: 2}, (err, data)->
-        done()
 
 
 
