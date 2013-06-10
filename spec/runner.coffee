@@ -1,7 +1,8 @@
 specFiles = [
   'index.coffee',
   'lib/traverse.coffee',
-  'lib/filterStatus.coffee'
+  'lib/filterStatus.coffee',
+  'lib/filters/depthSpec.coffee'
 ]
 
 

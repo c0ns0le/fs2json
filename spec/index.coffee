@@ -17,7 +17,7 @@ describe 'the module', ->
   it 'should return an object', ->
     fs2jsonModule().should.be.an 'object'
 
-describe 'public API', ->
+xdescribe 'public API', ->
 
   instance = null
   beforeEach ->
@@ -74,7 +74,7 @@ describe 'public API', ->
         instance.traverse.bind(undefined, undefined).should.throw Error
         instance.traverse.bind(undefined, undefined, undefined).should.throw Error
 
-describe "Traversing the file system", ->
+xdescribe "Traversing the file system", ->
 
   it 'should execute the callback with an error if the path does not exist', (done)->
     fs2jsonModule().traverse 'spec/fixtures/null', ->
