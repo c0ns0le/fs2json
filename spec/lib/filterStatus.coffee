@@ -18,15 +18,15 @@ describe 'filterStatus', ->
       filterStatus().facade.drop.should.be.a 'function'
       filterStatus().facade.keep.should.be.a 'function'
     it 'should give access to the status through functions', ->
-      filterStatus().should.contain.keys ['brokenNode', 'droppedNode']
-      filterStatus().brokenNode.should.be.a 'function'
-      filterStatus().droppedNode.should.be.a 'function'
+      filterStatus().should.contain.keys ['mustBreak', 'isDroppedNode']
+      filterStatus().mustBreak.should.be.a 'function'
+      filterStatus().isDroppedNode.should.be.a 'function'
   
   describe 'defaults', ->
     it 'should state to not break after the node', ->
-      expect(filterStatus().brokenNode()).to.be.false
+      expect(filterStatus().mustBreak()).to.be.false
     it 'should state to not drop the node', ->
-      expect(filterStatus().droppedNode()).to.be.false
+      expect(filterStatus().isDroppedNode()).to.be.false
   
 
   describe 'behaviour', ->
@@ -35,28 +35,28 @@ describe 'filterStatus', ->
       it 'should be able to switch from `no break` to `break` with `break` method', ->
         status = filterStatus()
         status.facade.break()
-        expect(status.brokenNode()).to.be.true
+        expect(status.mustBreak()).to.be.true
       it 'should keep the default behaviour with `continue` method', ->
         status = filterStatus()
         status.facade.continue()
-        expect(status.brokenNode()).to.be.false
+        expect(status.mustBreak()).to.be.false
       it 'should not be able to switch back from `break` to `no break` with `continue` method', ->
         status = filterStatus()
         status.facade.break()
         status.facade.continue()
-        expect(status.brokenNode()).to.be.true
+        expect(status.mustBreak()).to.be.true
 
     describe 'of `dropped / not dropped` state',->
       it 'should be able to switch from `no drop` to `drop` with `drop` method', ->
         status = filterStatus()
         status.facade.drop()
-        expect(status.droppedNode()).to.be.true
+        expect(status.isDroppedNode()).to.be.true
       it 'should keep the default behaviour with `keep` method', ->
         status = filterStatus()
         status.facade.keep()
-        expect(status.droppedNode()).to.be.false
+        expect(status.isDroppedNode()).to.be.false
       it 'should not be able to switch back from `drop` to `no drop` with `keep`', ->
         status = filterStatus()
         status.facade.drop()
         status.facade.keep()
-        expect(status.droppedNode()).to.be.true
+        expect(status.isDroppedNode()).to.be.true

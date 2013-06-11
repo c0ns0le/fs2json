@@ -20,22 +20,24 @@ describe 'Filtering by depth', ->
     describe 'when the path starts with a "/"', ->
       it 'should be true with "/"', ->
         @filter.call @filterStatus.facade, '/'
-        expect(@filterStatus.droppedNode()).to.be.false
+        expect(@filterStatus.isDroppedNode()).to.be.true
       it 'should be false with any other value', ->
         @filter.call @filterStatus.facade, '/b'
-        expect(@filterStatus.droppedNode()).to.be.true
+        expect(@filterStatus.isDroppedNode()).to.be.true
     
     describe 'when the path starts with a "."', ->
       it 'should be true with "."', ->
         @filter.call @filterStatus.facade, '.'
-        expect(@filterStatus.droppedNode()).to.be.false
+        expect(@filterStatus.isDroppedNode()).to.be.false
       it 'should be true with "./"', ->
         @filter.call @filterStatus.facade, './'
-        expect(@filterStatus.droppedNode()).to.be.false
+        expect(@filterStatus.isDroppedNode()).to.be.false
 
     describe 'otherwise', ->
       it 'should be false', ->
         @filter.call @filterStatus.facade, 'a'
-        expect(@filterStatus.droppedNode()).to.be.true
+        expect(@filterStatus.isDroppedNode()).to.be.true
         @filter.call @filterStatus.facade, 'a/b'
-        expect(@filterStatus.droppedNode()).to.be.true
+        expect(@filterStatus.isDroppedNode()).to.be.true
+
+
