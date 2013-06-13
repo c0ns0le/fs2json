@@ -68,9 +68,7 @@ function _addProperties(file, relativePath, stat) {
     this.children = [];
   }
 
-  var name = file.split('/').filter(function (e) {
-    return e.length;
-  }).pop();
+  var name = (require('path')).basename(file);
 
   var size = stat.size;
 
