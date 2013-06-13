@@ -1,3 +1,5 @@
+"use strict";
+
 /*
  * @TODO Makes the callback mandatory or automatically turns synchronous if not present
  *
@@ -47,75 +49,16 @@ function _handleArgs(rootPath, opts, cb) {
   }
 
   return {
-    path: rotPath,
+    path: rootPath,
     opts: opts,
     cb: cb
   };
 }
 
-/*
- * Adds properties to `this`, where `this` is an object literal
- * representing an entry in the filesystem
- *
- */
-function _addProperties(file, relativePath, stat) {
-
-  var type;
-  if (stat.isFile())          type = 'file';
-  if (stat.isSymbolicLink())  type = 'symlink';
-  if (stat.isDirectory()) {
-    type = 'directory';
-    this.children = [];
-  }
-
-  var name = (require('path')).basename(file);
-
-  var size = stat.size;
-
-  var fullPath = (require('path')).resolve(file);
-
-  this.name = name;
-  this.relativePath = relativePath;
-  this.fullPath = fullPath;
-  this.size = size;
-  this.type = type;
-}
-
-function _findChild (data, name) {
-  if (!data.children) {
-    return null;
-  }
-  var filtered = data.children.filter(function (elt) {
-    return elt.name === name;
-  });
-  if (filtered.length) {
-    return filtered[0];
-  }
-  return null;
-}
 
 
 module.exports = function () {
-  "use strict";
-
-  var _entryProps = ['name', 'relativePath', 'fullPath', 'size', 'type'];
-
-  /*
-   * The returned object
-   */
-  var obj = {
-    include: _include,
-    describe: _describe,
-    traverse: _traverse
-  };
-
-  function _include () {
-    return obj;
-  }
-
-  function _describe () {
-    return obj;
-  }
+  // var _entryProps = ['name', 'relativePath', 'fullPath', 'size', 'type'];
 
   function _traverse (rootPath, opts, cb) {
     var args = _handleArgs.apply(undefined, arguments);
@@ -166,5 +109,7 @@ module.exports = function () {
     });
   }
 
-  return obj;
+  return {
+    traverse: _traverse
+  }
 };
