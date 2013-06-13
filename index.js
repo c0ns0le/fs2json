@@ -25,6 +25,34 @@ function _ThrowOrCallback (err, cb) {
   }
 }
 
+function _handleArgs(rootPath, opts, cb) {
+  if (_.isFunction(opts)) {
+    cb = opts;
+    opts = {};
+  }
+  if (cb && !_.isFunction(cb)) {
+    return _ThrowOrCallback(new TypeError('The callback must be a function.'));
+  }
+  if (_.isObject(rootPath)) {
+    opts = rootPath;
+    rootPath = opts.path;
+  }
+
+  if (!_.isString(rootPath)) {
+    return _ThrowOrCallback(new Error('no path given'), cb);
+  }
+
+  if (!opts) {
+    opts = {};
+  }
+
+  return {
+    path: rotPath,
+    opts: opts,
+    cb: cb
+  };
+}
+
 /*
  * Adds properties to `this`, where `this` is an object literal
  * representing an entry in the filesystem
@@ -92,43 +120,25 @@ module.exports = function () {
   }
 
   function _traverse (rootPath, opts, cb) {
-    if (_.isFunction(opts)) {
-      cb = opts;
-      opts = {};
-    }
-    if (cb && !_.isFunction(cb)) {
-      return _ThrowOrCallback(new TypeError('The callback must be a function.'));
-    }
-    if (_.isObject(rootPath)) {
-      opts = rootPath;
-      rootPath = opts.path;
-    }
-
-    if (!_.isString(rootPath)) {
-      return _ThrowOrCallback(new Error('no path given'), cb);
-    }
-
-    if (!opts) {
-      opts = {};
-    }
+    var args = _handleArgs.apply(undefined, arguments);
 
     var finder = new treeverse();
     var depthFilter = require('./lib/filters/depth')({
-      depth: opts.depth,
-      minDepth: opts.minDepth,
-      maxDepth: opts.maxDepth,
-      baseDir: rootPath
+      depth: args.opts.depth,
+      minDepth: args.opts.minDepth,
+      maxDepth: args.opts.maxDepth,
+      baseDir: args.path
     });
     finder
       .filter(depthFilter)
-      .run(rootPath, opts);
+      .run(args.path, args.opts);
     var data = {};
 
     finder.on('path', function (file, stat) {
-      var splitPath = file.replace(rootPath, '').split('/').filter(function (e) {
+      var splitPath = file.replace(args.path, '').split('/').filter(function (e) {
         return e.length;
       });
-      var relativePathToSearchRoot = file.replace(rootPath, '').replace('/', '');
+      var relativePathToSearchRoot = file.replace(args.rootPath, '').replace('/', '');
       if (relativePathToSearchRoot.length) {
         relativePathToSearchRoot = relativePathToSearchRoot.split('/'); //a '/' could confuse with the FS root
       } else {
@@ -150,11 +160,11 @@ module.exports = function () {
     });
 
     finder.on('end', function () {
-      cb && cb(null, data);
+      args.cb && args.cb(null, data);
     });
 
     finder.on('error', function (err) {
-      return _ThrowOrCallback(err, cb);
+      return _ThrowOrCallback(err, args.cb);
     });
   }
 
