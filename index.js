@@ -7,7 +7,8 @@
 
 
 var _ = require('underscore'),
-    treeverse = require('./lib/traverse').Treeverse;
+    treeverse = require('./lib/traverse').Treeverse,
+    pathModule = require('path');
 
 /*
  * Default function in case no callback is provided
@@ -55,61 +56,36 @@ function _handleArgs(rootPath, opts, cb) {
   };
 }
 
+function _traverse (/* rootPath, opts, cb */) {
+  var args = _handleArgs.apply(undefined, arguments);
+  args.path = pathModule.resolve(args.path);
 
-
-module.exports = function () {
-  // var _entryProps = ['name', 'relativePath', 'fullPath', 'size', 'type'];
-
-  function _traverse (rootPath, opts, cb) {
-    var args = _handleArgs.apply(undefined, arguments);
-
-    var finder = new treeverse();
-    var depthFilter = require('./lib/filters/depth')({
-      depth: args.opts.depth,
+  var finder = new treeverse();
+  var depthFilter = require('./lib/filters/depth')({
+    depth: args.opts.depth,
       minDepth: args.opts.minDepth,
       maxDepth: args.opts.maxDepth,
       baseDir: args.path
-    });
-    finder
-      .filter(depthFilter)
-      .run(args.path, args.opts);
-    var data = {};
+  });
+  var jsonBuilder = require('./lib/plugins/output/json')({
+    baseDir: args.path
+  });
+  finder
+    .filter(depthFilter)
+    .run(args.path, args.opts);
 
-    finder.on('path', function (file, stat) {
-      var splitPath = file.replace(args.path, '').split('/').filter(function (e) {
-        return e.length;
-      });
-      var relativePathToSearchRoot = file.replace(args.rootPath, '').replace('/', '');
-      if (relativePathToSearchRoot.length) {
-        relativePathToSearchRoot = relativePathToSearchRoot.split('/'); //a '/' could confuse with the FS root
-      } else {
-        relativePathToSearchRoot = [];
-      }
+  finder.on('path', jsonBuilder);
+  finder.on('end', function () {
+    args.cb && args.cb(null, jsonBuilder.result());
+  });
 
-      var _data = data;
-      for (var i = 0; i < relativePathToSearchRoot.length; i++) {
-        var _child = _findChild(_data, relativePathToSearchRoot[i]);
-        if (!_child) {
-          _child = {};
-          // @TODO The following sucks monkey balls
-          _data.children = _data.children || [];
-          _data.children.push(_child);
-        }
-        _data = _child;
-      }
-      _addProperties.call(_data, file, relativePathToSearchRoot.join('/'), stat);
-    });
+  finder.on('error', function (err) {
+    return _ThrowOrCallback(err, args.cb);
+  });
+};
 
-    finder.on('end', function () {
-      args.cb && args.cb(null, data);
-    });
-
-    finder.on('error', function (err) {
-      return _ThrowOrCallback(err, args.cb);
-    });
-  }
-
+module.exports = function () {
   return {
     traverse: _traverse
-  }
+  };
 };
